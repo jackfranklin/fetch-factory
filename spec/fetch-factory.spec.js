@@ -113,3 +113,46 @@ test('it can take query params', (t) => {
   ]);
 });
 
+test('it can take a URL with placeholders for params', (t) => {
+  t.plan(1);
+
+  global.fetch.reset();
+
+  const UserFactory = fetchFactory.create({
+    url: '/users/:id',
+    method: 'GET',
+  }, {
+    findOne: {},
+  });
+
+  UserFactory.findOne({
+    params: { id: 123 },
+  });
+
+  t.deepEqual(global.fetch.args[0], [
+    '/users/123', { method: 'GET' },
+  ]);
+});
+
+test('it can take a URL with placeholders and query strings', (t) => {
+  t.plan(1);
+
+  global.fetch.reset();
+
+  const UserFactory = fetchFactory.create({
+    url: '/users/:id',
+    method: 'GET',
+  }, {
+    findOne: {},
+  });
+
+  UserFactory.findOne({
+    params: { id: 123, name: 'jack' },
+  });
+
+  t.deepEqual(global.fetch.args[0], [
+    '/users/123?name=jack', { method: 'GET' },
+  ]);
+});
+
+

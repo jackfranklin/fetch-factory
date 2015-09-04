@@ -1,6 +1,8 @@
 import _ from 'lodash';
 import queryString from 'query-string';
 
+import UrlPattern from 'url-pattern';
+
 const DEFAULT_REQUEST_METHOD = 'GET';
 
 const fetchFactory = {
@@ -16,10 +18,23 @@ const fetchFactory = {
     return this.factory;
   },
 
-  constructUrl(urlBase, params = {}) {
-    const stringifiedParams = queryString.stringify(params);
+  placeholdersInUrl(url) {
+    const placeholderRegex = /(:\w+)/g;
+    return (url.match(placeholderRegex) || []).map((key) => key.substring(1));
+  },
 
-    return urlBase + (stringifiedParams ? `?${stringifiedParams}` : '');
+  constructUrl(urlBase, params = {}) {
+    const urlPattern = new UrlPattern(urlBase);
+    const placeholdersInUrl = this.placeholdersInUrl(urlBase);
+    const urlWithPlaceholdersFilled = urlPattern.stringify(params);
+
+    const queryParams = _.pick(params, (val, paramKey) => {
+      return placeholdersInUrl.indexOf(paramKey) === -1;
+    });
+
+    const stringifiedParams = queryString.stringify(queryParams);
+
+    return urlWithPlaceholdersFilled + (stringifiedParams ? `?${stringifiedParams}` : '');
   },
 
   defineMethod(methodName, methodConfig) {
