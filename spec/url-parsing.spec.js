@@ -34,6 +34,14 @@ test('#constructUrl', (t) => {
     t.equal(result, '/users?id=123&name=jack');
   });
 
+  t.test('given a URL with a placeholder but no param', (t) => {
+    t.plan(1);
+
+    const result = fetchFactory.constructUrl('/users/:id', {});
+
+    t.equal(result, '/users');
+  });
+
   t.test('given a URL with a placeholder', (t) => {
     t.plan(1);
 

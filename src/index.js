@@ -11,9 +11,9 @@ const fetchFactory = {
 
     this.defaultOptions = options;
 
-    Object.keys(methods).forEach(function(method) {
+    Object.keys(methods).forEach((method) =>
       this.defineMethod(method, methods[method]);
-    }, this);
+    });
 
     return this.factory;
   },
@@ -26,7 +26,12 @@ const fetchFactory = {
   constructUrl(urlBase, params = {}) {
     const urlPattern = new UrlPattern(urlBase);
     const placeholdersInUrl = this.placeholdersInUrl(urlBase);
-    const urlWithPlaceholdersFilled = urlPattern.stringify(params);
+
+    const placeholderParams = placeholdersInUrl.reduce((obj, key) => {
+      return _.merge(obj, { [key]: params[key] || '' });
+    }, {});
+
+    const urlWithPlaceholdersFilled = urlPattern.stringify(placeholderParams);
 
     const queryParams = _.pick(params, (val, paramKey) => {
       return placeholdersInUrl.indexOf(paramKey) === -1;
@@ -34,7 +39,10 @@ const fetchFactory = {
 
     const stringifiedParams = queryString.stringify(queryParams);
 
-    return urlWithPlaceholdersFilled + (stringifiedParams ? `?${stringifiedParams}` : '');
+    const fullUrl = urlWithPlaceholdersFilled + (stringifiedParams ? `?${stringifiedParams}` : '');
+
+    return fullUrl.replace(/\/$/, '');
+
   },
 
   defineMethod(methodName, methodConfig) {
