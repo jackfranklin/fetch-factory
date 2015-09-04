@@ -82,14 +82,24 @@ const fetchFactory = {
 
       const baseUrl = runtimeConfig.url || methodConfig.url || this.defaultOptions.url;
 
-      const responseInterceptor = _.get(this.defaultOptions, 'interceptors.response', (response) => response.json());
+      let responseInterceptors = _.get(this.defaultOptions, 'interceptors.response', [(response) => response.json()]);
 
-      return fetch(
+      if (!Array.isArray(responseInterceptors)) {
+        responseInterceptors = [responseInterceptors];
+      }
+
+      let fetchRequest = fetch(
         this.constructUrl(baseUrl, runtimeConfig.params),
         _.pick(fetchOptions, (val, key) => {
           return val != null && !_.isEmpty(val);
         })
-      ).then(responseInterceptor);
+      );
+
+      responseInterceptors.forEach((interceptor) => {
+        fetchRequest = fetchRequest.then(interceptor);
+      });
+
+      return fetchRequest;
     }.bind(this)
   }
 };
