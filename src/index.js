@@ -11,7 +11,7 @@ const fetchFactory = {
 
     this.defaultOptions = options;
 
-    Object.keys(methods).forEach((method) =>
+    Object.keys(methods).forEach((method) => {
       this.defineMethod(method, methods[method]);
     });
 
@@ -24,7 +24,8 @@ const fetchFactory = {
   },
 
   constructUrl(urlBase, params = {}) {
-    const urlPattern = new UrlPattern(urlBase);
+    //TODO (JF): this is not a good way to handle http / https
+    const urlPattern = new UrlPattern(urlBase.replace('http://', ''));
     const placeholdersInUrl = this.placeholdersInUrl(urlBase);
 
     const placeholderParams = placeholdersInUrl.reduce((obj, key) => {
@@ -41,7 +42,7 @@ const fetchFactory = {
 
     const fullUrl = urlWithPlaceholdersFilled + (stringifiedParams ? `?${stringifiedParams}` : '');
 
-    return fullUrl.replace(/\/$/, '');
+    return `http://${fullUrl.replace(/\/$/, '')}`;
 
   },
 
@@ -78,7 +79,7 @@ const fetchFactory = {
 
           return valExists && key !== 'params';
         })
-      );
+      ).then((response) => response.json());
     }.bind(this)
   }
 };
