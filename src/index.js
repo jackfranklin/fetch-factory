@@ -2,7 +2,7 @@ import _ from 'lodash';
 
 const DEFAULT_REQUEST_METHOD = 'GET';
 
-const httpFactory = {
+const fetchFactory = {
   create: function(options, methods) {
     this.factory = {};
 
@@ -47,5 +47,5 @@ const httpFactory = {
   }
 };
 
-export default httpFactory;
+export default fetchFactory;
 

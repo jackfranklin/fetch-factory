@@ -3,15 +3,15 @@ import sinon from 'sinon';
 
 import 'isomorphic-fetch';
 
-import httpFactory from '../src/index';
+import fetchFactory from '../src/index';
 
 sinon.spy(global, 'fetch');
 
-test('httpFactory findAll makes the right request', (t) => {
+test('fetchFactory findAll makes the right request', (t) => {
   t.plan(1);
   global.fetch.reset();
 
-  const UserFactory = httpFactory.create({
+  const UserFactory = fetchFactory.create({
     url: '/users',
     method: 'GET',
   }, {
@@ -28,7 +28,7 @@ test('configuration can be overriden in the call of the method', (t) => {
   t.plan(1);
   global.fetch.reset();
 
-  const UserFactory = httpFactory.create({
+  const UserFactory = fetchFactory.create({
     url: '/users',
     method: 'GET',
   }, {
@@ -44,7 +44,7 @@ test('configuration can be overriden when defining a method', (t) => {
   t.plan(1);
   global.fetch.reset();
 
-  const UserFactory = httpFactory.create({
+  const UserFactory = fetchFactory.create({
     url: '/users',
     method: 'GET',
   }, {
@@ -66,7 +66,7 @@ test('data for a POST request is serialized to JSON', (t) => {
   t.plan(1);
   global.fetch.reset();
 
-  const UserFactory = httpFactory.create({
+  const UserFactory = fetchFactory.create({
     url: '/users',
     method: 'GET',
   }, {
