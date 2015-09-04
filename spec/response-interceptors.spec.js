@@ -6,7 +6,7 @@ import 'isomorphic-fetch';
 import nock from 'nock';
 import fetchFactory from '../src/index';
 
-test('the default interceptor consumes the data as JSON', (t) => {
+test('the default response interceptor consumes the data as JSON', (t) => {
   t.plan(2);
   const UserFactory = fetchFactory.create({
     url: 'http://www.api.com/users',
@@ -25,21 +25,24 @@ test('the default interceptor consumes the data as JSON', (t) => {
    });
 });
 
-test.only('you can pass in a custom interceptor', (t) => {
+test('you can pass in a custom interceptor', (t) => {
   t.plan(2);
 
   const UserFactory = fetchFactory.create({
     url: 'http://www.api.com/users',
     method: 'GET',
     interceptors: {
-      request: (data) => { name: 'bob' },
+      response: (data) => ({ name: 'bob' }),
     },
   }, {
     findAll: {},
   });
 
+  const stub = nock('http://www.api.com')
+                 .get('/users')
+                 .reply(200, { name: 'jack' });
+
    UserFactory.findAll().then((data) => {
-     console.log('got here');
      t.ok(stub.isDone(), 'the stub was called');
      t.deepEqual(data, { name: 'bob' });
    });

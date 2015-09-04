@@ -24,8 +24,16 @@ const fetchFactory = {
   },
 
   constructUrl(urlBase, params = {}) {
-    //TODO (JF): this is not a good way to handle http / https
-    const urlPattern = new UrlPattern(urlBase.replace('http://', ''));
+    const protocolRegex = /^(http|https):\/\//i;
+
+    const protocolMatch = urlBase.match(protocolRegex) && urlBase.match(protocolRegex)[0];
+
+    // TODO: bit funky - UrlPattern can't deal with the protocol ?
+    if (protocolMatch) {
+      urlBase = urlBase.replace(protocolRegex, '');
+    }
+
+    const urlPattern = new UrlPattern(urlBase);
     const placeholdersInUrl = this.placeholdersInUrl(urlBase);
 
     const placeholderParams = placeholdersInUrl.reduce((obj, key) => {
@@ -42,8 +50,11 @@ const fetchFactory = {
 
     const fullUrl = urlWithPlaceholdersFilled + (stringifiedParams ? `?${stringifiedParams}` : '');
 
-    return `http://${fullUrl.replace(/\/$/, '')}`;
-
+    if (protocolMatch) {
+      return protocolMatch + fullUrl.replace(/\/$/, '');
+    } else {
+      return fullUrl.replace(/\/$/, '');
+    }
   },
 
   defineMethod(methodName, methodConfig) {
@@ -54,7 +65,6 @@ const fetchFactory = {
       var fetchOptions = {
         method: runtimeConfig.method || methodConfig.method || this.defaultOptions.method || DEFAULT_REQUEST_METHOD,
         headers: runtimeConfig.headers || {},
-        params: runtimeConfig.params || {},
         body: null,
       }
 
@@ -72,14 +82,14 @@ const fetchFactory = {
 
       const baseUrl = runtimeConfig.url || methodConfig.url || this.defaultOptions.url;
 
-      return fetch(
-        this.constructUrl(baseUrl, fetchOptions.params),
-        _.pick(fetchOptions, (val, key) => {
-          const valExists = val != null && !_.isEmpty(val);
+      const responseInterceptor = _.get(this.defaultOptions, 'interceptors.response', (response) => response.json());
 
-          return valExists && key !== 'params';
+      return fetch(
+        this.constructUrl(baseUrl, runtimeConfig.params),
+        _.pick(fetchOptions, (val, key) => {
+          return val != null && !_.isEmpty(val);
         })
-      ).then((response) => response.json());
+      ).then(responseInterceptor);
     }.bind(this)
   }
 };
