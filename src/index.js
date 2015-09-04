@@ -1,9 +1,10 @@
 import _ from 'lodash';
+import queryString from 'query-string';
 
 const DEFAULT_REQUEST_METHOD = 'GET';
 
 const fetchFactory = {
-  create: function(options, methods) {
+  create(options, methods) {
     this.factory = {};
 
     this.defaultOptions = options;
@@ -14,7 +15,14 @@ const fetchFactory = {
 
     return this.factory;
   },
-  defineMethod: function(methodName, methodConfig) {
+
+  constructUrl(urlBase, params = {}) {
+    const stringifiedParams = queryString.stringify(params);
+
+    return urlBase + (stringifiedParams ? `?${stringifiedParams}` : '');
+  },
+
+  defineMethod(methodName, methodConfig) {
     this.factory[methodName] = function(runtimeConfig) {
       runtimeConfig = runtimeConfig || {};
       var requestMethod = methodConfig.method || this.defaultOptions.method;
@@ -22,6 +30,7 @@ const fetchFactory = {
       var fetchOptions = {
         method: runtimeConfig.method || methodConfig.method || this.defaultOptions.method || DEFAULT_REQUEST_METHOD,
         headers: runtimeConfig.headers || {},
+        params: runtimeConfig.params || {},
         body: null,
       }
 
@@ -37,10 +46,14 @@ const fetchFactory = {
         fetchOptions.headers = null;
       }
 
+      const baseUrl = runtimeConfig.url || methodConfig.url || this.defaultOptions.url;
+
       return fetch(
-        runtimeConfig.url || methodConfig.url || this.defaultOptions.url,
-        _.pick(fetchOptions, function(item) {
-          return !!item;
+        this.constructUrl(baseUrl, fetchOptions.params),
+        _.pick(fetchOptions, (val, key) => {
+          const valExists = val != null && !_.isEmpty(val);
+
+          return valExists && key !== 'params';
         })
       );
     }.bind(this)
