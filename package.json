@@ -2,8 +2,9 @@
   "name": "fetch-factory",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "lib/index.js",
   "scripts": {
+    "prepublish": "./node_modules/.bin/babel -d lib src",
     "test": "./node_modules/.bin/babel-tape-runner spec/*.spec.js"
   },
   "author": "",

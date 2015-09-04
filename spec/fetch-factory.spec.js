@@ -3,7 +3,7 @@ import sinon from 'sinon';
 
 import 'isomorphic-fetch';
 
-import httpFactory from '../index';
+import httpFactory from '../src/index';
 
 sinon.spy(global, 'fetch');
 
