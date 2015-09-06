@@ -64,7 +64,7 @@ const fetchFactory = {
 
       var fetchOptions = {
         method: runtimeConfig.method || methodConfig.method || this.defaultOptions.method || DEFAULT_REQUEST_METHOD,
-        headers: runtimeConfig.headers || {},
+        headers: runtimeConfig.headers || methodConfig.headers || {},
         body: null,
       }
 
