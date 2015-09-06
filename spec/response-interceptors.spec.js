@@ -72,5 +72,34 @@ test('you can have multiple interceptors', (t) => {
      t.ok(stub.isDone(), 'the stub was called');
      t.deepEqual(data, { name: 'pete' });
    });
+});
 
+test('you can have async interceptors', (t) => {
+  t.plan(2);
+
+  const UserFactory = fetchFactory.create({
+    url: 'http://www.api.com/users',
+    method: 'GET',
+    interceptors: {
+      response: [
+        (data) => ({ name: 'bob' }),
+        (data) => {
+          return new Promise((resolve, reject) => {
+            resolve({ name: 'pete' });
+          });
+        },
+      ],
+    },
+  }, {
+    findAll: {},
+  });
+
+  const stub = nock('http://www.api.com')
+                 .get('/users')
+                 .reply(200, { name: 'jack' });
+
+   UserFactory.findAll().then((data) => {
+     t.ok(stub.isDone(), 'the stub was called');
+     t.deepEqual(data, { name: 'pete' });
+   });
 });
