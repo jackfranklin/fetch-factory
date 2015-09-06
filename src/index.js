@@ -95,11 +95,9 @@ const fetchFactory = {
         })
       );
 
-      responseInterceptors.forEach((interceptor) => {
-        fetchRequest = fetchRequest.then(interceptor);
-      });
-
-      return fetchRequest;
+      return responseInterceptors.reduce((request, interceptor) => {
+        return request.then(interceptor);
+      }, fetchRequest);
     }.bind(this)
   }
 };
