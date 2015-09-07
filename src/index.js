@@ -11,7 +11,7 @@ const fetchFactory = {
 
     this.defaultOptions = options;
 
-    Object.keys(methods).forEach((method) =>
+    Object.keys(methods).forEach((method) => {
       this.defineMethod(method, methods[method]);
     });
 
@@ -24,6 +24,15 @@ const fetchFactory = {
   },
 
   constructUrl(urlBase, params = {}) {
+    const protocolRegex = /^(http|https):\/\//i;
+
+    const protocolMatch = urlBase.match(protocolRegex) && urlBase.match(protocolRegex)[0];
+
+    // TODO: bit funky - UrlPattern can't deal with the protocol ?
+    if (protocolMatch) {
+      urlBase = urlBase.replace(protocolRegex, '');
+    }
+
     const urlPattern = new UrlPattern(urlBase);
     const placeholdersInUrl = this.placeholdersInUrl(urlBase);
 
@@ -41,8 +50,11 @@ const fetchFactory = {
 
     const fullUrl = urlWithPlaceholdersFilled + (stringifiedParams ? `?${stringifiedParams}` : '');
 
-    return fullUrl.replace(/\/$/, '');
-
+    if (protocolMatch) {
+      return protocolMatch + fullUrl.replace(/\/$/, '');
+    } else {
+      return fullUrl.replace(/\/$/, '');
+    }
   },
 
   defineMethod(methodName, methodConfig) {
@@ -52,8 +64,7 @@ const fetchFactory = {
 
       var fetchOptions = {
         method: runtimeConfig.method || methodConfig.method || this.defaultOptions.method || DEFAULT_REQUEST_METHOD,
-        headers: runtimeConfig.headers || {},
-        params: runtimeConfig.params || {},
+        headers: runtimeConfig.headers || methodConfig.headers || {},
         body: null,
       }
 
@@ -71,14 +82,22 @@ const fetchFactory = {
 
       const baseUrl = runtimeConfig.url || methodConfig.url || this.defaultOptions.url;
 
-      return fetch(
-        this.constructUrl(baseUrl, fetchOptions.params),
-        _.pick(fetchOptions, (val, key) => {
-          const valExists = val != null && !_.isEmpty(val);
+      let responseInterceptors = _.get(this.defaultOptions, 'interceptors.response', [(response) => response.json()]);
 
-          return valExists && key !== 'params';
+      if (!Array.isArray(responseInterceptors)) {
+        responseInterceptors = [responseInterceptors];
+      }
+
+      let fetchRequest = fetch(
+        this.constructUrl(baseUrl, runtimeConfig.params),
+        _.pick(fetchOptions, (val, key) => {
+          return val != null && !_.isEmpty(val);
         })
       );
+
+      return responseInterceptors.reduce((request, interceptor) => {
+        return request.then(interceptor);
+      }, fetchRequest);
     }.bind(this)
   }
 };
