@@ -5,7 +5,9 @@ import 'isomorphic-fetch';
 
 import fetchFactory from '../src/index';
 
-sinon.spy(global, 'fetch');
+if (!global.fetch.reset) {
+  sinon.spy(global, 'fetch');
+}
 
 test('fetchFactory findAll makes the right request', (t) => {
   t.plan(1);
