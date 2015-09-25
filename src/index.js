@@ -5,11 +5,38 @@ import UrlPattern from 'url-pattern';
 
 const DEFAULT_REQUEST_METHOD = 'GET';
 
+const fetchFactoryTemplates = {
+  findOne: {
+    method: 'GET',
+  },
+  findAll: {
+    method: 'GET',
+  },
+  create: {
+    method: 'POST',
+  },
+  update: {
+    method: 'PUT',
+  },
+};
+
 const fetchFactory = {
-  create(options, methods) {
+  create(options, methods = {}) {
     this.factory = {};
 
     this.defaultOptions = options;
+
+    const templateMethods = (options.methods || []).map((methodName) => {
+      if (fetchFactoryTemplates[methodName]) {
+        return { [methodName]: fetchFactoryTemplates[methodName] };
+      } else {
+        throw new Error(`Unknown method ${methodName}`);
+      }
+    }).reduce(_.extend, {});
+
+    Object.keys(templateMethods).forEach((method) => {
+      this.defineMethod(method, templateMethods[method]);
+    });
 
     Object.keys(methods).forEach((method) => {
       this.defineMethod(method, methods[method]);
@@ -68,7 +95,7 @@ const fetchFactory = {
         body: null,
       }
 
-      if (requestMethod === 'POST') {
+      if (requestMethod === 'POST' || requestMethod === 'PUT') {
         fetchOptions.headers['Accept'] = 'application/json';
         fetchOptions.headers['Content-Type'] = 'application/json';
 

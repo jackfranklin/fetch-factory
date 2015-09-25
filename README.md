@@ -64,6 +64,17 @@ When a method defined by fetch-factory makes a `POST` request, it assumes that y
 - the `Content-Type` header of the request is set to `application/json`
 - if you pass in a `data` parameter, that is converted into JSON and sent as the body of the request
 
+## Shortcut Methods
+
+There's a few methods that we've come to use often with our factories: `findOne`, `findAll`, `create` and `update`. fetch-factory comes with these definitions by default, so you can just tell it which ones you'd like to create:
+
+```js
+var UserFactory = fetchFactory.create({
+    url: '/users/:id',
+    methods: ['findOne', 'create'],
+});
+```
+
 ## Interceptors
 
 fetch-factory also supports the concept of interceptors that can take a request and manipulate it before passing it on.
