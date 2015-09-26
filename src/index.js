@@ -1,6 +1,5 @@
 import _ from 'lodash';
 import queryString from 'query-string';
-
 import UrlPattern from 'url-pattern';
 
 const DEFAULT_REQUEST_METHOD = 'GET';
@@ -85,11 +84,10 @@ const fetchFactory = {
   },
 
   defineMethod(methodName, methodConfig) {
-    this.factory[methodName] = function(runtimeConfig) {
-      runtimeConfig = runtimeConfig || {};
-      var requestMethod = methodConfig.method || this.defaultOptions.method;
+    this.factory[methodName] = (runtimeConfig = {}) => {
+      const requestMethod = methodConfig.method || this.defaultOptions.method;
 
-      var fetchOptions = {
+      const fetchOptions = {
         method: runtimeConfig.method || methodConfig.method || this.defaultOptions.method || DEFAULT_REQUEST_METHOD,
         headers: runtimeConfig.headers || methodConfig.headers || {},
         body: null,
@@ -115,7 +113,7 @@ const fetchFactory = {
         responseInterceptors = [responseInterceptors];
       }
 
-      let fetchRequest = fetch(
+      const fetchRequest = fetch(
         this.constructUrl(baseUrl, runtimeConfig.params),
         _.pick(fetchOptions, (val, key) => {
           return val != null && !_.isEmpty(val);
@@ -125,9 +123,8 @@ const fetchFactory = {
       return responseInterceptors.reduce((request, interceptor) => {
         return request.then(interceptor);
       }, fetchRequest);
-    }.bind(this)
+    };
   }
 };
 
 export default fetchFactory;
-
