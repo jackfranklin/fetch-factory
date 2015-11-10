@@ -35,6 +35,8 @@ npm install fetch-factory
 
 Consumable in the client through jspm, Webpack or Browserify.
 
+You can also grab `dist/fetch-factory.js` or `dist/fetch-factory.min.js` which is a browser build. It exposes `global.fetchFactory`. `example/index.html` shows how you would use this.
+
 ## Configuration
 
 Configuration for a particular request can be set in one of three places:
@@ -66,12 +68,12 @@ When a method defined by fetch-factory makes a `POST` request, it assumes that y
 
 ## Shortcut Methods
 
-There's a few methods that we've come to use often with our factories: `findOne`, `findAll`, `create` and `update`. fetch-factory comes with these definitions by default, so you can just tell it which ones you'd like to create:
+There's a few methods that we've come to use often with our factories: `find`, `create` and `update`. fetch-factory comes with these definitions by default, so you can just tell it which ones you'd like to create:
 
 ```js
 var UserFactory = fetchFactory.create({
     url: '/users/:id',
-    methods: ['findOne', 'create'],
+    methods: ['find', 'create'],
 });
 ```
 
@@ -105,7 +107,7 @@ UserFactory.find().then(function(data) {
 });
 ```
 
-A time when you might want to override the default response interceptor is if you need access to extra information on the response, such as headers. In this case fetch-factory's default interceptor will be insufficient.
+A time when you might want to override the default response interceptor is if you need access to extra information on the response, such as headers. In this case fetch-factory's default interceptor will be insufficient, and you should override it to simply pass the full request through:
 
 ```js
 var UserFactory = fetchFactory.create({
