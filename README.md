@@ -7,20 +7,20 @@ A wrapper around the new `fetch` API to make creating services to talk to APIs e
 ```js
 var fetchFactory = require('fetch-factory');
 
-var UserFactory = fetchFactory.create({
+var Users = fetchFactory.create({
     url: 'http://api.mysite.com/users/:id',
 }, {
     find: { method: 'GET' },
     create: { method: 'POST' },
 });
 
-UserFactory.find(); // GET /users
+Users.find(); // GET /users
 
-UserFactory.find({
+Users.find({
     params: { id: 123 },
 }); // GET /users/123
 
-UserFactory.create({
+Users.create({
     data: {
         name: 'Jack',
     },
@@ -33,7 +33,7 @@ UserFactory.create({
 npm install fetch-factory
 ```
 
-Consumable in the client through Browserify or jspm.
+Consumable in the client through jspm, Webpack or Browserify.
 
 ## Configuration
 

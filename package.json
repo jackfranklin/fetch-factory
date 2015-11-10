@@ -4,8 +4,12 @@
   "description": "",
   "main": "lib/index.js",
   "scripts": {
-    "prepublish": "./node_modules/.bin/babel -d lib src",
-    "test": "./node_modules/.bin/babel-tape-runner spec/*.spec.js"
+    "browserify": "mkdir -p dist && browserify lib/browserify-entry.js -o dist/fetch-factory.js -s fetchFactory",
+    "minify": "uglifyjs dist/fetch-factory.js > dist/fetch-factory.min.js",
+    "build": "npm run babel && npm run browserify && npm run minify",
+    "babel": "babel -d lib src",
+    "prepublish": "npm run build",
+    "test": "babel-tape-runner spec/*.spec.js"
   },
   "author": "",
   "license": "ISC",
@@ -22,9 +26,11 @@
     "babel-core": "^6.1.2",
     "babel-preset-es2015": "^6.1.2",
     "babel-tape-runner": "^1.3.0",
+    "browserify": "^12.0.1",
     "faucet": "0.0.1",
     "nock": "^2.10.0",
     "sinon": "^1.16.1",
-    "tape": "^4.2.0"
+    "tape": "^4.2.0",
+    "uglify-js": "^2.5.0"
   }
 }
