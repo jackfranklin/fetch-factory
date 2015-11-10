@@ -80,6 +80,10 @@ const fetchFactory = {
     }
   },
 
+  removeNullFetchOptions(options) {
+    return _.pick(options, (v, k) => v != null && !_.isEmpty(v));
+  },
+
   defineMethod(methodName, methodConfig) {
     this.factory[methodName] = (runtimeConfig = {}) => {
       const requestMethod = methodConfig.method || this.defaultOptions.method;
@@ -97,11 +101,6 @@ const fetchFactory = {
         fetchOptions.body = JSON.stringify(runtimeConfig.data);
       }
 
-      // no need to send headers if we don't have any
-      if (_.isEmpty(fetchOptions.headers)) {
-        fetchOptions.headers = null;
-      }
-
       const baseUrl = runtimeConfig.url || methodConfig.url || this.defaultOptions.url;
 
       let responseInterceptors = _.get(this.defaultOptions, 'interceptors.response', [(response) => response.json()]);
@@ -110,11 +109,21 @@ const fetchFactory = {
         responseInterceptors = [responseInterceptors];
       }
 
+      let requestInterceptors = _.get(this.defaultOptions, 'interceptors.request', []);
+
+      if (!Array.isArray(requestInterceptors)) {
+        requestInterceptors = [requestInterceptors];
+      }
+
+      let requestOptions = requestInterceptors.reduce((options, interceptor) => {
+        return interceptor(options);
+      }, fetchOptions);
+
+      requestOptions = this.removeNullFetchOptions(requestOptions);
+
       const fetchRequest = fetch(
         this.constructUrl(baseUrl, runtimeConfig.params),
-        _.pick(fetchOptions, (val, key) => {
-          return val != null && !_.isEmpty(val);
-        })
+        requestOptions
       );
 
       return responseInterceptors.reduce((request, interceptor) => {
