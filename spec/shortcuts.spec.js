@@ -14,15 +14,16 @@ test('fetch factory shortcut methods', (t) => {
 
   const UserFactory = fetchFactory.create({
     url: '/users/:id',
-    methods: ['findOne', 'findAll', 'create', 'update'],
+    methods: ['find', 'create', 'update'],
   });
 
-  UserFactory.findAll();
+  UserFactory.find();
   t.deepEqual(global.fetch.args[0], ['/users', { method: 'GET' }]);
 
-  UserFactory.findOne({
+  UserFactory.find({
     params: { id: 1 },
   });
+
   t.deepEqual(global.fetch.args[1], ['/users/1', { method: 'GET' }]);
 
   UserFactory.create();

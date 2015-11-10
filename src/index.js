@@ -5,10 +5,7 @@ import UrlPattern from 'url-pattern';
 const DEFAULT_REQUEST_METHOD = 'GET';
 
 const fetchFactoryTemplates = {
-  findOne: {
-    method: 'GET',
-  },
-  findAll: {
+  find: {
     method: 'GET',
   },
   create: {
