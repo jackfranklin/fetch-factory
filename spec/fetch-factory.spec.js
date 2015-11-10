@@ -1,160 +1,122 @@
-import test from 'tape';
-import sinon from 'sinon';
-
 import 'isomorphic-fetch';
+import test from 'tape';
+
+import {
+  mockPostJson,
+  stubCalledBy,
+  defaultMock,
+  BASE_URL,
+  mockPostJsonBody
+} from './helpers';
 
 import fetchFactory from '../src/index';
 
-if (!global.fetch.reset) {
-  sinon.spy(global, 'fetch');
-}
-
 test('fetchFactory findAll makes the right request', (t) => {
   t.plan(1);
-  global.fetch.reset();
+
+  const stub = defaultMock();
 
   const UserFactory = fetchFactory.create({
-    url: '/users',
+    url: `${BASE_URL}/users`,
     method: 'GET',
   }, {
     findAll: {},
   });
 
-  UserFactory.findAll();
-
-  t.deepEqual(global.fetch.args[0], ['/users', { method: 'GET' }]);
+  stubCalledBy(t, UserFactory.findAll(), stub);
 });
 
 
 test('configuration can be overriden in the call of the method', (t) => {
   t.plan(1);
-  global.fetch.reset();
+  const stub = defaultMock('/foo');
 
   const UserFactory = fetchFactory.create({
-    url: '/users',
+    url: `${BASE_URL}/users`,
     method: 'GET',
   }, {
     findAll: {},
   });
 
-  UserFactory.findAll({ url: '/foo' });
-
-  t.deepEqual(global.fetch.args[0], ['/foo', { method: 'GET' }]);
+  stubCalledBy(t, UserFactory.findAll({ url: `${BASE_URL}/foo` }), stub);
 });
 
 test('configuration can be overriden when defining a method', (t) => {
   t.plan(1);
-  global.fetch.reset();
+
+  const stub = mockPostJson();
 
   const UserFactory = fetchFactory.create({
-    url: '/users',
+    url: `${BASE_URL}/users`,
     method: 'GET',
   }, {
     create: { method: 'POST' },
   });
 
-  UserFactory.create();
-
-  t.deepEqual(global.fetch.args[0], [
-    '/users',
-    {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-    },
-  ]);
+  stubCalledBy(t, UserFactory.create(), stub);
 });
 
 test('data for a POST request is serialized to JSON', (t) => {
   t.plan(1);
-  global.fetch.reset();
+
+  const stub = mockPostJsonBody();
 
   const UserFactory = fetchFactory.create({
-    url: '/users',
+    url: `${BASE_URL}/users`,
     method: 'GET',
   }, {
     create: { method: 'POST' },
   });
 
-  UserFactory.create({
-    data: { name: 'jack' },
-  });
-
-  t.deepEqual(global.fetch.args[0], [
-    '/users',
-    {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ name: 'jack' }),
-    }
-  ]);
+  stubCalledBy(t, UserFactory.create({ data: { name: 'jack' } }), stub);
 });
 
 test('it can take query params', (t) => {
   t.plan(1);
-  global.fetch.reset();
+
+  const stub = defaultMock('/users?id=123');
 
   const UserFactory = fetchFactory.create({
-    url: '/users',
+    url: `${BASE_URL}/users`,
     method: 'GET',
   }, {
     findAll: {},
   });
 
-  UserFactory.findAll({
-    params: { id: 123 },
-  });
-
-  t.deepEqual(global.fetch.args[0], [
-    '/users?id=123', { method: 'GET' },
-  ]);
+  stubCalledBy(t, UserFactory.findAll({ params: { id: 123 } }), stub);
 });
 
 test('it can take a URL with placeholders for params', (t) => {
   t.plan(1);
 
-  global.fetch.reset();
-
+  const stub = defaultMock('/users/123');
   const UserFactory = fetchFactory.create({
-    url: '/users/:id',
+    url: `${BASE_URL}/users/:id`,
     method: 'GET',
   }, {
     findOne: {},
   });
 
-  UserFactory.findOne({
+  stubCalledBy(t, UserFactory.findOne({
     params: { id: 123 },
-  });
-
-  t.deepEqual(global.fetch.args[0], [
-    '/users/123', { method: 'GET' },
-  ]);
+  }), stub);
 });
 
 test('it can take a URL with placeholders and query strings', (t) => {
   t.plan(1);
 
-  global.fetch.reset();
+  const stub = defaultMock('/users/123?name=jack');
 
   const UserFactory = fetchFactory.create({
-    url: '/users/:id',
+    url: `${BASE_URL}/users/:id`,
     method: 'GET',
   }, {
     findOne: {},
   });
 
-  UserFactory.findOne({
+  stubCalledBy(t, UserFactory.findOne({
     params: { id: 123, name: 'jack' },
-  });
-
-  t.deepEqual(global.fetch.args[0], [
-    '/users/123?name=jack', { method: 'GET' },
-  ]);
+  }), stub);
 });
 
 

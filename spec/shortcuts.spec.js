@@ -2,60 +2,63 @@ import test from 'tape';
 import sinon from 'sinon';
 import fetchFactory from '../src/index';
 
+import {
+  defaultMock,
+  mockPostJson,
+  stubCalledBy,
+  BASE_URL,
+  mockPutJsonBody
+} from './helpers';
+
 import 'isomorphic-fetch';
 
-if (!global.fetch.reset) {
-  sinon.spy(global, 'fetch');
-}
+test('fetch factory find shortcut', (t) => {
+  t.plan(1);
 
-test('fetch factory shortcut methods', (t) => {
-  t.plan(4);
-  global.fetch.reset();
+  let stub = defaultMock('/users');
 
   const UserFactory = fetchFactory.create({
-    url: '/users/:id',
+    url: `${BASE_URL}/users/:id`,
     methods: ['find', 'create', 'update'],
   });
 
-  UserFactory.find();
-  t.deepEqual(global.fetch.args[0], ['/users', { method: 'GET' }]);
-
-  UserFactory.find({
-    params: { id: 1 },
-  });
-
-  t.deepEqual(global.fetch.args[1], ['/users/1', { method: 'GET' }]);
-
-  UserFactory.create();
-  t.deepEqual(global.fetch.args[2], [
-    '/users',
-    {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-    },
-  ]);
-
-  UserFactory.update({
-    params: { id: 1 },
-  });
-  t.deepEqual(global.fetch.args[3], [
-    '/users/1',
-    {
-      method: 'PUT',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-    },
-  ]);
+  stubCalledBy(t, UserFactory.find(), stub);
 });
+
+test('fetch factory create shortcut', (t) => {
+  t.plan(1);
+
+  let stub = mockPostJson('/users');
+
+  const UserFactory = fetchFactory.create({
+    url: `${BASE_URL}/users/:id`,
+    methods: ['find', 'create', 'update'],
+  });
+
+  stubCalledBy(t, UserFactory.create({
+    data: { name: 'jack' },
+  }), stub);
+});
+
+test('fetch factory update shortcut', (t) => {
+  t.plan(1);
+
+  let stub = mockPutJsonBody('/users/123');
+
+  const UserFactory = fetchFactory.create({
+    url: `${BASE_URL}/users/:id`,
+    methods: ['find', 'create', 'update'],
+  });
+
+  stubCalledBy(t, UserFactory.update({
+    params: { id: 123 },
+    data: { name: 'jack' },
+  }), stub);
+});
+
 
 test('when you give fetch factory an unkown shortcut', (t) => {
   t.plan(1);
-  global.fetch.reset();
 
   t.throws(() => {
     fetchFactory.create({

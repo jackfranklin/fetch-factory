@@ -115,20 +115,20 @@ const fetchFactory = {
         requestInterceptors = [requestInterceptors];
       }
 
-      let requestOptions = requestInterceptors.reduce((options, interceptor) => {
-        return interceptor(options);
-      }, fetchOptions);
+      let requestOptionsPromise = requestInterceptors.reduce((options, interceptor) => {
+        return options.then(interceptor);
+      }, Promise.resolve(fetchOptions));
 
-      requestOptions = this.removeNullFetchOptions(requestOptions);
+      const requestUrl = this.constructUrl(baseUrl, runtimeConfig.params);
 
-      const fetchRequest = fetch(
-        this.constructUrl(baseUrl, runtimeConfig.params),
-        requestOptions
-      );
-
-      return responseInterceptors.reduce((request, interceptor) => {
-        return request.then(interceptor);
-      }, fetchRequest);
+      return requestOptionsPromise.then((requestOptions) => {
+        return this.removeNullFetchOptions(requestOptions);
+      }).then((requestOptions) => {
+        let fetchResult = fetch(requestUrl, requestOptions);
+        return responseInterceptors.reduce((result, interceptor) => {
+          return result.then(interceptor);
+        }, fetchResult);
+      });
     };
   }
 };
