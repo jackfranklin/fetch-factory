@@ -37,6 +37,11 @@ Consumable in the client through jspm, Webpack or Browserify.
 
 You can also grab `dist/fetch-factory.js` or `dist/fetch-factory.min.js` which is a browser build. It exposes `global.fetchFactory`. `example/index.html` shows how you would use this.
 
+Note that this library assumes a global `fetch` and `Promise` object. If you need to polyfill these, the following are recommended:
+
+- [github/fetch](https://github.com/github/fetch) `window.fetch` polyfill
+- [jakearchibald/es6-promise](https://github.com/jakearchibald/es6-promise) `Promise` polyfill.
+
 ## Configuration
 
 Configuration for a particular request can be set in one of three places:
