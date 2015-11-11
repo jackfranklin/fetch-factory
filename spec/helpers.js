@@ -21,12 +21,6 @@ export const JSON_HEADERS = {
   'Content-Type': 'application/json',
 };
 
-// TODO: why is Nock giving back headers as an array?!
-export const NOCK_JSON_HEADERS_MATCH = {
-  'Accept': (v) => v[0] === 'application/json',
-  'Content-Type': (v) => v[0] === 'application/json',
-}
-
 export function mockPostWithHeaders(slash = '/users', headers = {}, body) {
   let stub = nock(BASE_URL, { reqheaders: headers });
   stub = ( body ? stub.post(slash, body) : stub.post(slash) );
@@ -35,7 +29,7 @@ export function mockPostWithHeaders(slash = '/users', headers = {}, body) {
 }
 
 export function mockPostJson(slash = '/users', body = null) {
-  return mockPostWithHeaders(slash, NOCK_JSON_HEADERS_MATCH, body);
+  return mockPostWithHeaders(slash, JSON_HEADERS, body);
 }
 
 export function mockPostJsonBody(slash = '/users') {
@@ -43,7 +37,7 @@ export function mockPostJsonBody(slash = '/users') {
 }
 
 export function mockPutJsonBody(slash = '/users') {
-  return nock(BASE_URL, { reqheaders: NOCK_JSON_HEADERS_MATCH })
+  return nock(BASE_URL, { reqheaders: JSON_HEADERS })
     .put(slash, { name: 'jack' })
     .reply(201, { name: 'jack' });
 }

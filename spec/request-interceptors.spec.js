@@ -23,8 +23,7 @@ test('you can define a request interceptor', (t) => {
 
   const stub = nock('http://www.api.com', {
                    reqheaders: {
-                     // TODO: why is the value an array?
-                     'Foo': (val) => val[0] === 'Test',
+                     'Foo': 'Test',
                    }
                  })
                  .get('/users')
@@ -58,8 +57,7 @@ test('you can define multiple request interceptors', (t) => {
 
   const stub = nock('http://www.api.com', {
                    reqheaders: {
-                     // TODO: why is the value an array?
-                     'Foo': (val) => val[0] === 'Test2',
+                     'Foo': 'Test2',
                    }
                  })
                  .get('/users')
@@ -91,8 +89,7 @@ test('multiple interceptors when some are async works', (t) => {
 
   const stub = nock('http://www.api.com', {
                    reqheaders: {
-                     // TODO: why is the value an array?
-                     'Foo': (val) => val[0] === 'Test2',
+                     'Foo': 'Test2',
                    }
                  })
                  .get('/users')
