@@ -109,6 +109,41 @@ var fetchFactory = {
       return fullUrl.replace(/\/$/, '');
     }
   },
+  removeNullFetchOptions: function removeNullFetchOptions(options) {
+    return _lodash2.default.pick(options, function (v, k) {
+      return v != null && !_lodash2.default.isEmpty(v);
+    });
+  },
+  getResponseInterceptors: function getResponseInterceptors() {
+    var responseInterceptors = _lodash2.default.get(this.defaultOptions, 'interceptors.response', [function (response) {
+      return response.json();
+    }]);
+
+    if (!Array.isArray(responseInterceptors)) {
+      responseInterceptors = [responseInterceptors];
+    }
+
+    return responseInterceptors;
+  },
+  getRequestInterceptors: function getRequestInterceptors() {
+    var requestInterceptors = _lodash2.default.get(this.defaultOptions, 'interceptors.request', []);
+
+    if (!Array.isArray(requestInterceptors)) {
+      requestInterceptors = [requestInterceptors];
+    }
+
+    return requestInterceptors;
+  },
+  applyRequestInterceptors: function applyRequestInterceptors(interceptors, fetchOptions) {
+    return interceptors.reduce(function (options, interceptor) {
+      return options.then(interceptor);
+    }, Promise.resolve(fetchOptions));
+  },
+  applyResponseInterceptors: function applyResponseInterceptors(interceptors, fetchResult) {
+    return interceptors.reduce(function (result, interceptor) {
+      return result.then(interceptor);
+    }, fetchResult);
+  },
   defineMethod: function defineMethod(methodName, methodConfig) {
     var _this2 = this;
 
@@ -130,28 +165,20 @@ var fetchFactory = {
         fetchOptions.body = JSON.stringify(runtimeConfig.data);
       }
 
-      // no need to send headers if we don't have any
-      if (_lodash2.default.isEmpty(fetchOptions.headers)) {
-        fetchOptions.headers = null;
-      }
-
       var baseUrl = runtimeConfig.url || methodConfig.url || _this2.defaultOptions.url;
 
-      var responseInterceptors = _lodash2.default.get(_this2.defaultOptions, 'interceptors.response', [function (response) {
-        return response.json();
-      }]);
+      var requestInterceptors = _this2.getRequestInterceptors();
+      var requestOptionsPromise = _this2.applyRequestInterceptors(requestInterceptors, fetchOptions);
 
-      if (!Array.isArray(responseInterceptors)) {
-        responseInterceptors = [responseInterceptors];
-      }
+      return requestOptionsPromise.then(function (requestOptions) {
+        return _this2.removeNullFetchOptions(requestOptions);
+      }).then(function (requestOptions) {
+        var requestUrl = _this2.constructUrl(baseUrl, runtimeConfig.params);
+        var fetchResult = fetch(requestUrl, requestOptions);
+        var responseInterceptors = _this2.getResponseInterceptors();
 
-      var fetchRequest = fetch(_this2.constructUrl(baseUrl, runtimeConfig.params), _lodash2.default.pick(fetchOptions, function (val, key) {
-        return val != null && !_lodash2.default.isEmpty(val);
-      }));
-
-      return responseInterceptors.reduce(function (request, interceptor) {
-        return request.then(interceptor);
-      }, fetchRequest);
+        return _this2.applyResponseInterceptors(responseInterceptors, fetchResult);
+      });
     };
   }
 };

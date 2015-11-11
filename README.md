@@ -154,3 +154,6 @@ UserFactory.find().then(function(response) {
 
 ## Changelog
 
+##### V0.1.0 - 11/11/2015
+- first release
+
