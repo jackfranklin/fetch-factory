@@ -83,7 +83,32 @@ fetch-factory also supports the concept of interceptors that can take a request 
 
 ### Request Interceptors
 
-Coming Soon
+If you need to apply a transformation to every request before it is made (for example, adding an authorisation header), you can use a request interceptor. These can be sync or async. You can define a single request interceptor, or an array of multiple. An interceptor is expected to return the modified request object, or a new object with three properties:
+
+- `headers`: an object of key value pairs mapping headers to values
+- `body`: the string representing the request body, or `null`.
+- `method`: the method of the request
+
+```js
+var UserFactory = fetchFactory.create({
+    url: 'http://api.mysite.com/users/:id',
+    method: 'GET',
+    interceptors: {
+        request: function(request) {
+            request.headers['Authorisation']: 'Bearer ACCESS_TOKEN123';
+            return request;
+        },
+    },
+}, {
+    find: {},
+});
+
+UserFactory.find().then(function(data) {
+    console.log(data.name) // 'bob'
+});
+```
+
+By using an interceptor in this way you can avoid repeating the authorisation logic accross your frontend code base.
 
 ### Response Interceptors
 
