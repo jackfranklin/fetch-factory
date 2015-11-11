@@ -84,6 +84,38 @@ const fetchFactory = {
     return _.pick(options, (v, k) => v != null && !_.isEmpty(v));
   },
 
+  getResponseInterceptors() {
+    let responseInterceptors = _.get(this.defaultOptions, 'interceptors.response', [(response) => response.json()]);
+
+    if (!Array.isArray(responseInterceptors)) {
+      responseInterceptors = [responseInterceptors];
+    }
+
+    return responseInterceptors;
+  },
+
+  getRequestInterceptors() {
+    let requestInterceptors = _.get(this.defaultOptions, 'interceptors.request', []);
+
+    if (!Array.isArray(requestInterceptors)) {
+      requestInterceptors = [requestInterceptors];
+    }
+
+    return requestInterceptors;
+  },
+
+  applyRequestInterceptors(interceptors, fetchOptions) {
+    return interceptors.reduce((options, interceptor) => {
+      return options.then(interceptor);
+    }, Promise.resolve(fetchOptions));
+  },
+
+  applyResponseInterceptors(interceptors, fetchResult) {
+    return interceptors.reduce((result, interceptor) => {
+      return result.then(interceptor);
+    }, fetchResult);
+  },
+
   defineMethod(methodName, methodConfig) {
     this.factory[methodName] = (runtimeConfig = {}) => {
       const requestMethod = methodConfig.method || this.defaultOptions.method;
@@ -103,31 +135,17 @@ const fetchFactory = {
 
       const baseUrl = runtimeConfig.url || methodConfig.url || this.defaultOptions.url;
 
-      let responseInterceptors = _.get(this.defaultOptions, 'interceptors.response', [(response) => response.json()]);
-
-      if (!Array.isArray(responseInterceptors)) {
-        responseInterceptors = [responseInterceptors];
-      }
-
-      let requestInterceptors = _.get(this.defaultOptions, 'interceptors.request', []);
-
-      if (!Array.isArray(requestInterceptors)) {
-        requestInterceptors = [requestInterceptors];
-      }
-
-      let requestOptionsPromise = requestInterceptors.reduce((options, interceptor) => {
-        return options.then(interceptor);
-      }, Promise.resolve(fetchOptions));
-
-      const requestUrl = this.constructUrl(baseUrl, runtimeConfig.params);
+      const requestInterceptors = this.getRequestInterceptors();
+      const requestOptionsPromise = this.applyRequestInterceptors(requestInterceptors, fetchOptions);
 
       return requestOptionsPromise.then((requestOptions) => {
         return this.removeNullFetchOptions(requestOptions);
       }).then((requestOptions) => {
-        let fetchResult = fetch(requestUrl, requestOptions);
-        return responseInterceptors.reduce((result, interceptor) => {
-          return result.then(interceptor);
-        }, fetchResult);
+        const requestUrl = this.constructUrl(baseUrl, runtimeConfig.params);
+        const fetchResult = fetch(requestUrl, requestOptions);
+        const responseInterceptors = this.getResponseInterceptors();
+
+        return this.applyResponseInterceptors(responseInterceptors, fetchResult);
       });
     };
   }
