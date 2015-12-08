@@ -1,22 +1,22 @@
 import test from 'tape';
 
-import fetchFactory from '../src/index';
+import { placeholdersInUrl, constructUrl } from '../src/url-parsing';
 
 test('#placeholdersInUrl', (t) => {
   t.plan(3);
 
-  t.deepEqual(fetchFactory.placeholdersInUrl('/users/:id'), ['id']);
-  t.deepEqual(fetchFactory.placeholdersInUrl('/users/:id/:name'), [
+  t.deepEqual(placeholdersInUrl('/users/:id'), ['id']);
+  t.deepEqual(placeholdersInUrl('/users/:id/:name'), [
     'id', 'name'
   ]);
-  t.deepEqual(fetchFactory.placeholdersInUrl('/users/:id/foo'), ['id']);
+  t.deepEqual(placeholdersInUrl('/users/:id/foo'), ['id']);
 });
 
 test('#constructUrl', (t) => {
   t.test('given a query param', (t) => {
     t.plan(1);
 
-    const result = fetchFactory.constructUrl('/users', {
+    const result = constructUrl('/users', {
       id: 123,
     });
 
@@ -26,7 +26,7 @@ test('#constructUrl', (t) => {
   t.test('given multiple query params', (t) => {
     t.plan(1);
 
-    const result = fetchFactory.constructUrl('/users', {
+    const result = constructUrl('/users', {
       id: 123,
       name: 'jack',
     });
@@ -37,7 +37,7 @@ test('#constructUrl', (t) => {
   t.test('given a URL with a placeholder but no param', (t) => {
     t.plan(1);
 
-    const result = fetchFactory.constructUrl('/users/:id', {});
+    const result = constructUrl('/users/:id', {});
 
     t.equal(result, '/users');
   });
@@ -45,7 +45,7 @@ test('#constructUrl', (t) => {
   t.test('given a URL with a placeholder', (t) => {
     t.plan(1);
 
-    const result = fetchFactory.constructUrl('/users/:id', {
+    const result = constructUrl('/users/:id', {
       id: 123,
     });
 
@@ -55,7 +55,7 @@ test('#constructUrl', (t) => {
   t.test('given a URL with a placeholder and query params', (t) => {
     t.plan(1);
 
-    const result = fetchFactory.constructUrl('/users/:id', {
+    const result = constructUrl('/users/:id', {
       id: 123,
       name: 'jack',
     });

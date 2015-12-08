@@ -1,6 +1,6 @@
 import _ from 'lodash';
-import queryString from 'query-string';
-import UrlPattern from 'url-pattern';
+
+import { constructUrl } from './url-parsing';
 
 const DEFAULT_REQUEST_METHOD = 'GET';
 
@@ -16,8 +16,8 @@ const fetchFactoryTemplates = {
   },
 };
 
-const fetchFactory = {
-  create(options, methods = {}) {
+class FetchFactory {
+  constructor(options, methods = {}) {
     this.factory = {};
 
     this.defaultOptions = options;
@@ -37,52 +37,11 @@ const fetchFactory = {
     Object.keys(methods).forEach((method) => {
       this.defineMethod(method, methods[method]);
     });
-
-    return this.factory;
-  },
-
-  placeholdersInUrl(url) {
-    const placeholderRegex = /(:\w+)/g;
-    return (url.match(placeholderRegex) || []).map((key) => key.substring(1));
-  },
-
-  constructUrl(urlBase, params = {}) {
-    const protocolRegex = /^(http|https):\/\//i;
-
-    const protocolMatch = urlBase.match(protocolRegex) && urlBase.match(protocolRegex)[0];
-
-    // TODO: bit funky - UrlPattern can't deal with the protocol ?
-    if (protocolMatch) {
-      urlBase = urlBase.replace(protocolRegex, '');
-    }
-
-    const urlPattern = new UrlPattern(urlBase);
-    const placeholdersInUrl = this.placeholdersInUrl(urlBase);
-
-    const placeholderParams = placeholdersInUrl.reduce((obj, key) => {
-      return _.merge(obj, { [key]: params[key] || '' });
-    }, {});
-
-    const urlWithPlaceholdersFilled = urlPattern.stringify(placeholderParams);
-
-    const queryParams = _.pick(params, (val, paramKey) => {
-      return placeholdersInUrl.indexOf(paramKey) === -1;
-    });
-
-    const stringifiedParams = queryString.stringify(queryParams);
-
-    const fullUrl = urlWithPlaceholdersFilled + (stringifiedParams ? `?${stringifiedParams}` : '');
-
-    if (protocolMatch) {
-      return protocolMatch + fullUrl.replace(/\/$/, '');
-    } else {
-      return fullUrl.replace(/\/$/, '');
-    }
-  },
+  }
 
   removeNullFetchOptions(options) {
     return _.pick(options, (v, k) => v != null && !_.isEmpty(v));
-  },
+  }
 
   getResponseInterceptors() {
     let responseInterceptors = _.get(this.defaultOptions, 'interceptors.response', [(response) => response.json()]);
@@ -92,7 +51,7 @@ const fetchFactory = {
     }
 
     return responseInterceptors;
-  },
+  }
 
   getRequestInterceptors() {
     let requestInterceptors = _.get(this.defaultOptions, 'interceptors.request', []);
@@ -102,19 +61,19 @@ const fetchFactory = {
     }
 
     return requestInterceptors;
-  },
+  }
 
   applyRequestInterceptors(interceptors, fetchOptions) {
     return interceptors.reduce((options, interceptor) => {
       return options.then(interceptor);
     }, Promise.resolve(fetchOptions));
-  },
+  }
 
   applyResponseInterceptors(interceptors, fetchResult) {
     return interceptors.reduce((result, interceptor) => {
       return result.then(interceptor);
     }, fetchResult);
-  },
+  }
 
   defineMethod(methodName, methodConfig) {
     this.factory[methodName] = (runtimeConfig = {}) => {
@@ -141,7 +100,7 @@ const fetchFactory = {
       return requestOptionsPromise.then((requestOptions) => {
         return this.removeNullFetchOptions(requestOptions);
       }).then((requestOptions) => {
-        const requestUrl = this.constructUrl(baseUrl, runtimeConfig.params);
+        const requestUrl = constructUrl(baseUrl, runtimeConfig.params);
         const fetchResult = fetch(requestUrl, requestOptions);
         const responseInterceptors = this.getResponseInterceptors();
 
@@ -149,6 +108,12 @@ const fetchFactory = {
       });
     };
   }
+}
+
+const fetchFactory = {
+  create(options, methods = {}) {
+    return new FetchFactory(options, methods).factory;
+  },
 };
 
 export default fetchFactory;
