@@ -159,6 +159,9 @@ UserFactory.find().then(function(response) {
 
 ## Changelog
 
+##### V0.2.0 - 8/12/2015
+- fix isssue that lead to being unable to create more than one factory
+
 ##### V0.1.0 - 11/11/2015
 - first release
 
