@@ -62,4 +62,14 @@ test('#constructUrl', (t) => {
 
     t.equal(result, '/users/123?name=jack');
   });
+
+  t.test('Given a port number in the URL', (t) => {
+    t.plan(1);
+
+    const result = constructUrl('http://foo.com:8000/users/:id', {
+      id: 123,
+    });
+
+    t.equal(result, 'http://foo.com:8000/users/123');
+  });
 });

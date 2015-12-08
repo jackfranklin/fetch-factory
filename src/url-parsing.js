@@ -8,6 +8,10 @@ export function placeholdersInUrl(url) {
 }
 
 export function constructUrl(urlBase, params = {}) {
+  const portRegex = /:(\d+)/;
+
+  const portMatch = urlBase.match(portRegex);
+
   const protocolRegex = /^(http|https):\/\//i;
 
   const protocolMatch = urlBase.match(protocolRegex) && urlBase.match(protocolRegex)[0];
@@ -23,6 +27,10 @@ export function constructUrl(urlBase, params = {}) {
   const placeholderParams = placeholders.reduce((obj, key) => {
     return _.merge(obj, { [key]: params[key] || '' });
   }, {});
+
+  if (portMatch) {
+    placeholderParams[portMatch[1]] = portMatch[0];
+  }
 
   const urlWithPlaceholdersFilled = urlPattern.stringify(placeholderParams);
 
