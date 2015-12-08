@@ -6,6 +6,8 @@ module.exports = fetchFactory.default;
 },{"./index":2}],2:[function(require,module,exports){
 'use strict';
 
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -14,17 +16,13 @@ var _lodash = require('lodash');
 
 var _lodash2 = _interopRequireDefault(_lodash);
 
-var _queryString = require('query-string');
-
-var _queryString2 = _interopRequireDefault(_queryString);
-
-var _urlPattern = require('url-pattern');
-
-var _urlPattern2 = _interopRequireDefault(_urlPattern);
+var _urlParsing = require('./url-parsing');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var DEFAULT_REQUEST_METHOD = 'GET';
 
@@ -40,11 +38,13 @@ var fetchFactoryTemplates = {
   }
 };
 
-var fetchFactory = {
-  create: function create(options) {
+var FetchFactory = (function () {
+  function FetchFactory(options) {
     var _this = this;
 
     var methods = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+
+    _classCallCheck(this, FetchFactory);
 
     this.factory = {};
 
@@ -65,126 +65,174 @@ var fetchFactory = {
     Object.keys(methods).forEach(function (method) {
       _this.defineMethod(method, methods[method]);
     });
+  }
 
-    return this.factory;
-  },
-  placeholdersInUrl: function placeholdersInUrl(url) {
-    var placeholderRegex = /(:\w+)/g;
-    return (url.match(placeholderRegex) || []).map(function (key) {
-      return key.substring(1);
-    });
-  },
-  constructUrl: function constructUrl(urlBase) {
-    var params = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
-
-    var protocolRegex = /^(http|https):\/\//i;
-
-    var protocolMatch = urlBase.match(protocolRegex) && urlBase.match(protocolRegex)[0];
-
-    // TODO: bit funky - UrlPattern can't deal with the protocol ?
-    if (protocolMatch) {
-      urlBase = urlBase.replace(protocolRegex, '');
+  _createClass(FetchFactory, [{
+    key: 'removeNullFetchOptions',
+    value: function removeNullFetchOptions(options) {
+      return _lodash2.default.pick(options, function (v, k) {
+        return v != null && !_lodash2.default.isEmpty(v);
+      });
     }
+  }, {
+    key: 'getResponseInterceptors',
+    value: function getResponseInterceptors() {
+      var responseInterceptors = _lodash2.default.get(this.defaultOptions, 'interceptors.response', [function (response) {
+        return response.json();
+      }]);
 
-    var urlPattern = new _urlPattern2.default(urlBase);
-    var placeholdersInUrl = this.placeholdersInUrl(urlBase);
-
-    var placeholderParams = placeholdersInUrl.reduce(function (obj, key) {
-      return _lodash2.default.merge(obj, _defineProperty({}, key, params[key] || ''));
-    }, {});
-
-    var urlWithPlaceholdersFilled = urlPattern.stringify(placeholderParams);
-
-    var queryParams = _lodash2.default.pick(params, function (val, paramKey) {
-      return placeholdersInUrl.indexOf(paramKey) === -1;
-    });
-
-    var stringifiedParams = _queryString2.default.stringify(queryParams);
-
-    var fullUrl = urlWithPlaceholdersFilled + (stringifiedParams ? '?' + stringifiedParams : '');
-
-    if (protocolMatch) {
-      return protocolMatch + fullUrl.replace(/\/$/, '');
-    } else {
-      return fullUrl.replace(/\/$/, '');
-    }
-  },
-  removeNullFetchOptions: function removeNullFetchOptions(options) {
-    return _lodash2.default.pick(options, function (v, k) {
-      return v != null && !_lodash2.default.isEmpty(v);
-    });
-  },
-  getResponseInterceptors: function getResponseInterceptors() {
-    var responseInterceptors = _lodash2.default.get(this.defaultOptions, 'interceptors.response', [function (response) {
-      return response.json();
-    }]);
-
-    if (!Array.isArray(responseInterceptors)) {
-      responseInterceptors = [responseInterceptors];
-    }
-
-    return responseInterceptors;
-  },
-  getRequestInterceptors: function getRequestInterceptors() {
-    var requestInterceptors = _lodash2.default.get(this.defaultOptions, 'interceptors.request', []);
-
-    if (!Array.isArray(requestInterceptors)) {
-      requestInterceptors = [requestInterceptors];
-    }
-
-    return requestInterceptors;
-  },
-  applyRequestInterceptors: function applyRequestInterceptors(interceptors, fetchOptions) {
-    return interceptors.reduce(function (options, interceptor) {
-      return options.then(interceptor);
-    }, Promise.resolve(fetchOptions));
-  },
-  applyResponseInterceptors: function applyResponseInterceptors(interceptors, fetchResult) {
-    return interceptors.reduce(function (result, interceptor) {
-      return result.then(interceptor);
-    }, fetchResult);
-  },
-  defineMethod: function defineMethod(methodName, methodConfig) {
-    var _this2 = this;
-
-    this.factory[methodName] = function () {
-      var runtimeConfig = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
-
-      var requestMethod = methodConfig.method || _this2.defaultOptions.method;
-
-      var fetchOptions = {
-        method: runtimeConfig.method || methodConfig.method || _this2.defaultOptions.method || DEFAULT_REQUEST_METHOD,
-        headers: runtimeConfig.headers || methodConfig.headers || {},
-        body: null
-      };
-
-      if (requestMethod === 'POST' || requestMethod === 'PUT') {
-        fetchOptions.headers['Accept'] = 'application/json';
-        fetchOptions.headers['Content-Type'] = 'application/json';
-
-        fetchOptions.body = JSON.stringify(runtimeConfig.data);
+      if (!Array.isArray(responseInterceptors)) {
+        responseInterceptors = [responseInterceptors];
       }
 
-      var baseUrl = runtimeConfig.url || methodConfig.url || _this2.defaultOptions.url;
+      return responseInterceptors;
+    }
+  }, {
+    key: 'getRequestInterceptors',
+    value: function getRequestInterceptors() {
+      var requestInterceptors = _lodash2.default.get(this.defaultOptions, 'interceptors.request', []);
 
-      var requestInterceptors = _this2.getRequestInterceptors();
-      var requestOptionsPromise = _this2.applyRequestInterceptors(requestInterceptors, fetchOptions);
+      if (!Array.isArray(requestInterceptors)) {
+        requestInterceptors = [requestInterceptors];
+      }
 
-      return requestOptionsPromise.then(function (requestOptions) {
-        return _this2.removeNullFetchOptions(requestOptions);
-      }).then(function (requestOptions) {
-        var requestUrl = _this2.constructUrl(baseUrl, runtimeConfig.params);
-        var fetchResult = fetch(requestUrl, requestOptions);
-        var responseInterceptors = _this2.getResponseInterceptors();
+      return requestInterceptors;
+    }
+  }, {
+    key: 'applyRequestInterceptors',
+    value: function applyRequestInterceptors(interceptors, fetchOptions) {
+      return interceptors.reduce(function (options, interceptor) {
+        return options.then(interceptor);
+      }, Promise.resolve(fetchOptions));
+    }
+  }, {
+    key: 'applyResponseInterceptors',
+    value: function applyResponseInterceptors(interceptors, fetchResult) {
+      return interceptors.reduce(function (result, interceptor) {
+        return result.then(interceptor);
+      }, fetchResult);
+    }
+  }, {
+    key: 'defineMethod',
+    value: function defineMethod(methodName, methodConfig) {
+      var _this2 = this;
 
-        return _this2.applyResponseInterceptors(responseInterceptors, fetchResult);
-      });
-    };
+      this.factory[methodName] = function () {
+        var runtimeConfig = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+
+        var requestMethod = methodConfig.method || _this2.defaultOptions.method;
+
+        var fetchOptions = {
+          method: runtimeConfig.method || methodConfig.method || _this2.defaultOptions.method || DEFAULT_REQUEST_METHOD,
+          headers: runtimeConfig.headers || methodConfig.headers || {},
+          body: null
+        };
+
+        if (requestMethod === 'POST' || requestMethod === 'PUT') {
+          fetchOptions.headers['Accept'] = 'application/json';
+          fetchOptions.headers['Content-Type'] = 'application/json';
+
+          fetchOptions.body = JSON.stringify(runtimeConfig.data);
+        }
+
+        var baseUrl = runtimeConfig.url || methodConfig.url || _this2.defaultOptions.url;
+
+        var requestInterceptors = _this2.getRequestInterceptors();
+        var requestOptionsPromise = _this2.applyRequestInterceptors(requestInterceptors, fetchOptions);
+
+        return requestOptionsPromise.then(function (requestOptions) {
+          return _this2.removeNullFetchOptions(requestOptions);
+        }).then(function (requestOptions) {
+          var requestUrl = (0, _urlParsing.constructUrl)(baseUrl, runtimeConfig.params);
+          var fetchResult = fetch(requestUrl, requestOptions);
+          var responseInterceptors = _this2.getResponseInterceptors();
+
+          return _this2.applyResponseInterceptors(responseInterceptors, fetchResult);
+        });
+      };
+    }
+  }]);
+
+  return FetchFactory;
+})();
+
+var fetchFactory = {
+  create: function create(options) {
+    var methods = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+
+    return new FetchFactory(options, methods).factory;
   }
 };
 
 exports.default = fetchFactory;
-},{"lodash":3,"query-string":4,"url-pattern":6}],3:[function(require,module,exports){
+},{"./url-parsing":3,"lodash":4}],3:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.placeholdersInUrl = placeholdersInUrl;
+exports.constructUrl = constructUrl;
+
+var _urlPattern = require('url-pattern');
+
+var _urlPattern2 = _interopRequireDefault(_urlPattern);
+
+var _lodash = require('lodash');
+
+var _lodash2 = _interopRequireDefault(_lodash);
+
+var _queryString = require('query-string');
+
+var _queryString2 = _interopRequireDefault(_queryString);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+function placeholdersInUrl(url) {
+  var placeholderRegex = /(:\w+)/g;
+  return (url.match(placeholderRegex) || []).map(function (key) {
+    return key.substring(1);
+  });
+}
+
+function constructUrl(urlBase) {
+  var params = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+
+  var protocolRegex = /^(http|https):\/\//i;
+
+  var protocolMatch = urlBase.match(protocolRegex) && urlBase.match(protocolRegex)[0];
+
+  // TODO: bit funky - UrlPattern can't deal with the protocol ?
+  if (protocolMatch) {
+    urlBase = urlBase.replace(protocolRegex, '');
+  }
+
+  var urlPattern = new _urlPattern2.default(urlBase);
+  var placeholders = placeholdersInUrl(urlBase);
+
+  var placeholderParams = placeholders.reduce(function (obj, key) {
+    return _lodash2.default.merge(obj, _defineProperty({}, key, params[key] || ''));
+  }, {});
+
+  var urlWithPlaceholdersFilled = urlPattern.stringify(placeholderParams);
+
+  var queryParams = _lodash2.default.pick(params, function (val, paramKey) {
+    return placeholders.indexOf(paramKey) === -1;
+  });
+
+  var stringifiedParams = _queryString2.default.stringify(queryParams);
+
+  var fullUrl = urlWithPlaceholdersFilled + (stringifiedParams ? '?' + stringifiedParams : '');
+
+  if (protocolMatch) {
+    return protocolMatch + fullUrl.replace(/\/$/, '');
+  } else {
+    return fullUrl.replace(/\/$/, '');
+  }
+}
+},{"lodash":4,"query-string":5,"url-pattern":7}],4:[function(require,module,exports){
 (function (global){
 /**
  * @license
@@ -12539,7 +12587,7 @@ exports.default = fetchFactory;
 }.call(this));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 'use strict';
 var strictUriEncode = require('strict-uri-encode');
 
@@ -12599,7 +12647,7 @@ exports.stringify = function (obj) {
 	}).join('&') : '';
 };
 
-},{"strict-uri-encode":5}],5:[function(require,module,exports){
+},{"strict-uri-encode":6}],6:[function(require,module,exports){
 'use strict';
 module.exports = function (str) {
 	return encodeURIComponent(str).replace(/[!'()*]/g, function (c) {
@@ -12607,7 +12655,7 @@ module.exports = function (str) {
 	});
 };
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 // Generated by CoffeeScript 1.10.0
 var slice = [].slice;
 
