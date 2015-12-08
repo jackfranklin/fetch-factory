@@ -200,6 +200,10 @@ function placeholdersInUrl(url) {
 function constructUrl(urlBase) {
   var params = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
 
+  var portRegex = /:(\d+)/;
+
+  var portMatch = urlBase.match(portRegex);
+
   var protocolRegex = /^(http|https):\/\//i;
 
   var protocolMatch = urlBase.match(protocolRegex) && urlBase.match(protocolRegex)[0];
@@ -215,6 +219,10 @@ function constructUrl(urlBase) {
   var placeholderParams = placeholders.reduce(function (obj, key) {
     return _lodash2.default.merge(obj, _defineProperty({}, key, params[key] || ''));
   }, {});
+
+  if (portMatch) {
+    placeholderParams[portMatch[1]] = portMatch[0];
+  }
 
   var urlWithPlaceholdersFilled = urlPattern.stringify(placeholderParams);
 

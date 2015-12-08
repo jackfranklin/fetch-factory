@@ -159,6 +159,9 @@ UserFactory.find().then(function(response) {
 
 ## Changelog
 
+##### V0.2.1 - 8/12/2015
+- fix issue that lead to port numbers in URLs not working - thanks @copyhold
+
 ##### V0.2.0 - 8/12/2015
 - fix isssue that lead to being unable to create more than one factory
 
