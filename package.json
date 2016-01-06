@@ -1,7 +1,7 @@
 {
   "name": "fetch-factory",
   "version": "0.2.1",
-  "description": "",
+  "description": "Easy JS objects for talking to your APIs",
   "main": "lib/index.js",
   "scripts": {
     "browserify": "mkdir -p dist && browserify lib/browserify-entry.js -o dist/fetch-factory.js -s fetchFactory",
@@ -10,6 +10,10 @@
     "babel": "babel -d lib src",
     "prepublish": "npm run build",
     "test": "babel-tape-runner spec/*.spec.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jackfranklin/fetch-factory.git"
   },
   "author": "",
   "license": "ISC",
