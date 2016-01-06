@@ -119,7 +119,11 @@ By using an interceptor in this way you can avoid repeating the authorisation lo
 
 ### Response Interceptors
 
-By default, fetch-factory will call its default response interceptor, which simply takes the stream returned by `fetch` and consumes it as JSON, returning a JavaScript object. You can override this by passing an `interceptors` object with a `response` key:
+By default, fetch-factory will call its two default response interceptors:
+1) Simply checks the status and rejects on any non-2xx status
+2) Simply takes the stream returned by `fetch` and consumes it as JSON, returning a JavaScript object.
+
+You can override these default interceptors by passing an `interceptors` object with a `response` key:
 
 ```js
 var UserFactory = fetchFactory.create({
