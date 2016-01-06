@@ -1,9 +1,8 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.fetchFactory = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var fetchFactory = require('./index');
+'use strict';
 
-module.exports = fetchFactory.default;
-
-},{"./index":2}],2:[function(require,module,exports){
+module.exports = require('./index.js').default;
+},{"./index.js":2}],2:[function(require,module,exports){
 'use strict';
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
@@ -123,7 +122,9 @@ var FetchFactory = (function () {
         var requestMethod = methodConfig.method || _this2.defaultOptions.method;
 
         var fetchOptions = {
-          method: runtimeConfig.method || methodConfig.method || _this2.defaultOptions.method || DEFAULT_REQUEST_METHOD,
+          method: [_this2.defaultOptions, methodConfig, runtimeConfig].reduce(function (method, config) {
+            return config.method || method;
+          }, DEFAULT_REQUEST_METHOD),
           headers: runtimeConfig.headers || methodConfig.headers || {},
           body: null
         };
@@ -12659,7 +12660,7 @@ exports.stringify = function (obj) {
 'use strict';
 module.exports = function (str) {
 	return encodeURIComponent(str).replace(/[!'()*]/g, function (c) {
-		return '%' + c.charCodeAt(0).toString(16);
+		return '%' + c.charCodeAt(0).toString(16).toUpperCase();
 	});
 };
 

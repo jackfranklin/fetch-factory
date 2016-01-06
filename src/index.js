@@ -44,7 +44,11 @@ class FetchFactory {
   }
 
   getResponseInterceptors() {
-    let responseInterceptors = _.get(this.defaultOptions, 'interceptors.response', [(response) => response.json()]);
+    let responseInterceptors = _.get(
+      this.defaultOptions,
+      'interceptors.response',
+      [(response) => response.json()]
+    );
 
     if (!Array.isArray(responseInterceptors)) {
       responseInterceptors = [responseInterceptors];
@@ -80,7 +84,11 @@ class FetchFactory {
       const requestMethod = methodConfig.method || this.defaultOptions.method;
 
       const fetchOptions = {
-        method: runtimeConfig.method || methodConfig.method || this.defaultOptions.method || DEFAULT_REQUEST_METHOD,
+        method: [
+          this.defaultOptions,
+          methodConfig,
+          runtimeConfig,
+        ].reduce((method, config) => config.method || method, DEFAULT_REQUEST_METHOD),
         headers: runtimeConfig.headers || methodConfig.headers || {},
         body: null,
       }
@@ -95,7 +103,10 @@ class FetchFactory {
       const baseUrl = runtimeConfig.url || methodConfig.url || this.defaultOptions.url;
 
       const requestInterceptors = this.getRequestInterceptors();
-      const requestOptionsPromise = this.applyRequestInterceptors(requestInterceptors, fetchOptions);
+      const requestOptionsPromise = this.applyRequestInterceptors(
+        requestInterceptors,
+        fetchOptions
+      );
 
       return requestOptionsPromise.then((requestOptions) => {
         return this.removeNullFetchOptions(requestOptions);

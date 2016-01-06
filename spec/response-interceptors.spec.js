@@ -19,10 +19,10 @@ test('the default response interceptor consumes the data as JSON', (t) => {
                  .get('/users')
                  .reply(200, { name: 'jack' });
 
-   UserFactory.findAll().then((data) => {
-     t.ok(stub.isDone(), 'the stub was called');
-     t.deepEqual(data, { name: 'jack' });
-   });
+  UserFactory.findAll().then((data) => {
+    t.ok(stub.isDone(), 'the stub was called');
+    t.deepEqual(data, { name: 'jack' });
+  });
 });
 
 test('you can pass in a custom interceptor', (t) => {
@@ -39,13 +39,13 @@ test('you can pass in a custom interceptor', (t) => {
   });
 
   const stub = nock('http://www.api.com')
-                 .get('/users')
-                 .reply(200, { name: 'jack' });
+    .get('/users')
+    .reply(200, { name: 'jack' });
 
-   UserFactory.findAll().then((data) => {
-     t.ok(stub.isDone(), 'the stub was called');
-     t.deepEqual(data, { name: 'bob' });
-   });
+  UserFactory.findAll().then((data) => {
+    t.ok(stub.isDone(), 'the stub was called');
+    t.deepEqual(data, { name: 'bob' });
+  });
 });
 
 test('you can have multiple interceptors', (t) => {
@@ -68,10 +68,10 @@ test('you can have multiple interceptors', (t) => {
                  .get('/users')
                  .reply(200, { name: 'jack' });
 
-   UserFactory.findAll().then((data) => {
-     t.ok(stub.isDone(), 'the stub was called');
-     t.deepEqual(data, { name: 'pete' });
-   });
+  UserFactory.findAll().then((data) => {
+    t.ok(stub.isDone(), 'the stub was called');
+    t.deepEqual(data, { name: 'pete' });
+  });
 });
 
 test('you can have async interceptors', (t) => {
@@ -98,8 +98,8 @@ test('you can have async interceptors', (t) => {
                  .get('/users')
                  .reply(200, { name: 'jack' });
 
-   UserFactory.findAll().then((data) => {
-     t.ok(stub.isDone(), 'the stub was called');
-     t.deepEqual(data, { name: 'pete' });
-   });
+  UserFactory.findAll().then((data) => {
+    t.ok(stub.isDone(), 'the stub was called');
+    t.deepEqual(data, { name: 'pete' });
+  });
 });
