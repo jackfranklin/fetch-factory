@@ -27,6 +27,8 @@ Users.create({
 }); // POST /users with JSON stringified obj { name: 'jack' }
 ```
 
+You can run another example by cloning this repo and running `npm i && npm run example`.
+
 ## Install
 
 ```
@@ -167,4 +169,3 @@ UserFactory.find().then(function(response) {
 
 ##### V0.1.0 - 11/11/2015
 - first release
-
