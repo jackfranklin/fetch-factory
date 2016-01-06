@@ -4,7 +4,7 @@ export const BASE_URL = 'http://www.api.com';
 
 export function defaultMock(slash = '/users') {
   return nock(BASE_URL).get(slash).reply(200, {
-    name: 'jack'
+    name: 'jack',
   });
 }
 

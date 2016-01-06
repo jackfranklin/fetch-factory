@@ -1,0 +1,31 @@
+{
+    "env": {
+        "browser": true,
+        "node": true
+    },
+    "rules": {
+        "curly": 2,
+        "max-len": [
+            2,
+            100,
+            4
+        ],
+        "indent": [2, 2, {"SwitchCase": 1}],
+        "no-underscore-dangle": 2,
+        "comma-dangle": [2, "always-multiline"],
+        "no-unused-expressions": 2,
+        "no-use-before-define": 2,
+        "space-after-keywords": 2,
+        "quotes": [2, "single"],
+        "strict": [2, "never"]
+    },
+    "ecmaFeatures": {
+        "destructuring": true,
+        "arrowFunctions": true,
+        "blockBindings": true,
+        "classes": true,
+        "jsx": true,
+        "modules": true
+    },
+    "parser": "babel-eslint"
+}

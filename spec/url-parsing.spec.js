@@ -7,7 +7,7 @@ test('#placeholdersInUrl', (t) => {
 
   t.deepEqual(placeholdersInUrl('/users/:id'), ['id']);
   t.deepEqual(placeholdersInUrl('/users/:id/:name'), [
-    'id', 'name'
+    'id', 'name',
   ]);
   t.deepEqual(placeholdersInUrl('/users/:id/foo'), ['id']);
 });

@@ -6,7 +6,7 @@ import {
   stubCalledBy,
   defaultMock,
   BASE_URL,
-  mockPostJsonBody
+  mockPostJsonBody,
 } from './helpers';
 
 import fetchFactory from '../src/index';
@@ -118,5 +118,3 @@ test('it can take a URL with placeholders and query strings', (t) => {
     params: { id: 123, name: 'jack' },
   }), stub);
 });
-
-

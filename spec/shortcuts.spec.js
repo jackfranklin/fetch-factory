@@ -7,7 +7,7 @@ import {
   mockPostJson,
   stubCalledBy,
   BASE_URL,
-  mockPutJsonBody
+  mockPutJsonBody,
 } from './helpers';
 
 import 'isomorphic-fetch';
