@@ -4,6 +4,7 @@
   "description": "Easy JS objects for talking to your APIs",
   "main": "lib/index.js",
   "scripts": {
+    "example": "open http://localhost:8000/example && python -m SimpleHTTPServer",
     "browserify": "mkdir -p dist && browserify lib/browserify-entry.js -o dist/fetch-factory.js -s fetchFactory",
     "minify": "uglifyjs dist/fetch-factory.js > dist/fetch-factory.min.js",
     "build": "npm run babel && npm run browserify && npm run minify",

@@ -2,6 +2,7 @@
 <html>
   <head>
     <title>Fetch Factory Example</title>
+    <pre id="result"></pre>
     <script src="../dist/fetch-factory.js"></script>
     <script>
       var GitHubRepos = fetchFactory.create({
@@ -13,7 +14,10 @@
       GitHubRepos.find({
         params: { username: 'jackfranklin' },
       }).then(function(repos) {
-        console.log('I found repositories', repos);
+        document.getElementById('result').innerHTML = [
+          'I found repositories:',
+          JSON.stringify(repos, null, 2),
+        ].join('\n');
       });
     </script>
   </head>
