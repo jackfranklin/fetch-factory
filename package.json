@@ -6,10 +6,10 @@
   "scripts": {
     "browserify": "mkdir -p dist && browserify lib/browserify-entry.js -o dist/fetch-factory.js -s fetchFactory",
     "minify": "uglifyjs dist/fetch-factory.js > dist/fetch-factory.min.js",
-    "prebuild": "eslint src spec",
     "build": "npm run babel && npm run browserify && npm run minify",
     "babel": "babel -d lib src",
     "prepublish": "npm run build",
+    "pretest": "eslint src spec",
     "test": "babel-tape-runner spec/*.spec.js"
   },
   "repository": {
