@@ -1,4 +1,7 @@
-import _ from 'lodash';
+import assign from 'lodash.assign';
+import pick from 'lodash.pick';
+import get from 'lodash.get';
+import isEmpty from 'lodash.isEmpty';
 
 import { constructUrl } from './url-parsing';
 
@@ -28,7 +31,7 @@ class FetchFactory {
       } else {
         throw new Error(`Unknown method ${methodName}`);
       }
-    }).reduce(_.extend, {});
+    }).reduce(assign, {});
 
     Object.keys(templateMethods).forEach((method) => {
       this.defineMethod(method, templateMethods[method]);
@@ -40,11 +43,11 @@ class FetchFactory {
   }
 
   removeNullFetchOptions(options) {
-    return _.pick(options, (v, k) => v != null && !_.isEmpty(v));
+    return pick(options, (v, k) => v != null && !isEmpty(v));
   }
 
   getResponseInterceptors() {
-    let responseInterceptors = _.get(
+    let responseInterceptors = get(
       this.defaultOptions,
       'interceptors.response',
       [(response) => response.json()]
@@ -58,7 +61,7 @@ class FetchFactory {
   }
 
   getRequestInterceptors() {
-    let requestInterceptors = _.get(this.defaultOptions, 'interceptors.request', []);
+    let requestInterceptors = get(this.defaultOptions, 'interceptors.request', []);
 
     if (!Array.isArray(requestInterceptors)) {
       requestInterceptors = [requestInterceptors];
