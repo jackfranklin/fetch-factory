@@ -1,5 +1,6 @@
 import UrlPattern from 'url-pattern';
-import _ from 'lodash';
+import pick from 'lodash.pick';
+import merge from 'lodash.merge';
 import queryString from 'query-string';
 
 export function placeholdersInUrl(url) {
@@ -25,7 +26,7 @@ export function constructUrl(urlBase, params = {}) {
   const placeholders = placeholdersInUrl(urlBase);
 
   const placeholderParams = placeholders.reduce((obj, key) => {
-    return _.merge(obj, { [key]: params[key] || '' });
+    return merge(obj, { [key]: params[key] || '' });
   }, {});
 
   if (portMatch) {
@@ -34,7 +35,7 @@ export function constructUrl(urlBase, params = {}) {
 
   const urlWithPlaceholdersFilled = urlPattern.stringify(placeholderParams);
 
-  const queryParams = _.pick(params, (val, paramKey) => {
+  const queryParams = pick(params, (val, paramKey) => {
     return placeholders.indexOf(paramKey) === -1;
   });
 
