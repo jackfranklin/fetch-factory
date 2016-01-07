@@ -7,6 +7,16 @@ import { constructUrl } from './url-parsing';
 
 const DEFAULT_REQUEST_METHOD = 'GET';
 
+const throwOnResponseError = (response) => {
+  if (response.status >= 200 && response.status < 300) {
+    return response;
+  } else {
+    const error = new Error(response.statusText);
+    error.response = response;
+    throw error;
+  }
+}
+
 const fetchFactoryTemplates = {
   find: {
     method: 'GET',
@@ -50,7 +60,7 @@ class FetchFactory {
     let responseInterceptors = get(
       this.defaultOptions,
       'interceptors.response',
-      [(response) => response.json()]
+      [throwOnResponseError, (response) => response.json()]
     );
 
     if (!Array.isArray(responseInterceptors)) {

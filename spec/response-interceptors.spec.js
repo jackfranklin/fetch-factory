@@ -25,6 +25,22 @@ test('the default response interceptor consumes the data as JSON', (t) => {
   });
 });
 
+test('the default response interceptor throws on response error', (t) => {
+  t.plan(1);
+  const UserFactory = fetchFactory.create({
+    url: 'http://www.api.com/users',
+    method: 'GET',
+  }, {
+    findAll: {},
+  });
+
+  const stub = nock('http://www.api.com')
+                 .get('/users')
+                 .reply(404);
+
+  t.throws(UserFactory.findAll());
+});
+
 test('you can pass in a custom interceptor', (t) => {
   t.plan(2);
 
