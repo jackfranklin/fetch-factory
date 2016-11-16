@@ -1,5 +1,5 @@
 import assign from 'lodash.assign';
-import pick from 'lodash.pick';
+import pickBy from 'lodash.pickBy';
 import get from 'lodash.get';
 import isEmpty from 'lodash.isEmpty';
 
@@ -53,7 +53,7 @@ class FetchFactory {
   }
 
   removeNullFetchOptions(options) {
-    return pick(options, (v, k) => v != null && !isEmpty(v));
+    return pickBy(options, (v, k) => v != null && !isEmpty(v));
   }
 
   getResponseInterceptors() {

@@ -1,5 +1,5 @@
 import UrlPattern from 'url-pattern';
-import pick from 'lodash.pick';
+import pickBy from 'lodash.pickBy';
 import merge from 'lodash.merge';
 import queryString from 'query-string';
 
@@ -35,7 +35,7 @@ export function constructUrl(urlBase, params = {}) {
 
   const urlWithPlaceholdersFilled = urlPattern.stringify(placeholderParams);
 
-  const queryParams = pick(params, (val, paramKey) => {
+  const queryParams = pickBy(params, (val, paramKey) => {
     return placeholders.indexOf(paramKey) === -1;
   });
 
