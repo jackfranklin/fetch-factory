@@ -25,7 +25,7 @@ test('the default response interceptor consumes the data as JSON', (t) => {
   });
 });
 
-test('the default response interceptor throws on response error', (t) => {
+test.skip('the default response interceptor throws on response error', (t) => {
   t.plan(1);
   const UserFactory = fetchFactory.create({
     url: 'http://www.api.com/users',
