@@ -119,11 +119,10 @@ By using an interceptor in this way you can avoid repeating the authorisation lo
 
 ### Response Interceptors
 
-By default, fetch-factory will call its two default response interceptors:
-1) Simply checks the status and rejects on any non-2xx status
-2) Simply takes the stream returned by `fetch` and consumes it as JSON, returning a JavaScript object.
+By default, fetch-factory will call its default response interceptor:
+- It simply takes the stream returned by `fetch` and consumes it as JSON, returning a JavaScript object.
 
-You can override these default interceptors by passing an `interceptors` object with a `response` key:
+You can override this interceptor by passing an `interceptors` object with a `response` key:
 
 ```js
 var UserFactory = fetchFactory.create({
@@ -140,6 +139,39 @@ var UserFactory = fetchFactory.create({
 
 UserFactory.find().then(function(data) {
     console.log(data.name) // 'bob'
+});
+```
+
+By default, fetch-factory will call its default error handler.
+- It simply checks the status and rejects on any non-2xx status
+
+You can disable the error handler by setting the `rejectOnBadResponse` flag to false. You can implement your own error handling logic. It is important that you handle response errors within the first passed `ìnterceptor`:
+
+```js
+var UserFactory = fetchFactory.create({
+    url: 'http://api.mysite.com/users/:id',
+    method: 'GET',
+    rejectOnBadResponse: false,
+    interceptors: {
+        response: [
+            function(response) {
+                if (response.status < 200 || response.status >= 300) {
+                    const error = new Error(response.statusText);
+                    error.response = response;
+                    throw error;
+                }
+            },
+            function(data) {
+                return { name: 'bob' };
+            },
+        ],
+    },
+}, {
+    find: {},
+});
+
+UserFactory.find().catch(function(error) {
+    console.log(error.message)
 });
 ```
 
