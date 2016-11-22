@@ -90,8 +90,8 @@ test('the default error handler throws on respsonse error with a custom intercep
   });
 });
 
-test('the default error handler is not called if rejectOnBadResponse is set to false', (t) => {
-  t.plan(3);
+test('the default error handler does not throw with rejectOnBadResponse set to false', (t) => {
+  t.plan(2);
 
   const UserFactory = fetchFactory.create({
     url: 'http://www.api.com/users',
@@ -99,14 +99,6 @@ test('the default error handler is not called if rejectOnBadResponse is set to f
     rejectOnBadResponse: false,
     interceptors: {
       response: [
-        (response) => {
-          if (response.status < 200 || response.status >= 300) {
-            const error = new Error(response.statusText);
-            error.response = response;
-            error.customFlag = true;
-            throw error;
-          }
-        },
         (data) => ({ name: 'bob' }),
       ],
     },
@@ -118,10 +110,9 @@ test('the default error handler is not called if rejectOnBadResponse is set to f
     .get('/users')
     .reply(404);
 
-  UserFactory.findAll().catch((error) => {
+  UserFactory.findAll().then((data) => {
     t.ok(stub.isDone(), 'the stub was called');
-    t.equal(error.response.status, 404);
-    t.true(error.customFlag);
+    t.deepEqual(data, { name: 'bob' });
   });
 });
 
