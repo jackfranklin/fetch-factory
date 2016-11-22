@@ -19,6 +19,9 @@
     "url": "https://github.com/jackfranklin/fetch-factory.git"
   },
   "author": "",
+  "contributors": [
+    "Vincent Schlatter <binnah.development@gmail.com> (https://github.com/vischlatter)"
+  ],
   "license": "ISC",
   "dependencies": {
     "es6-promise": "^4.0.5",
