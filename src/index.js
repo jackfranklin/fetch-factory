@@ -35,6 +35,13 @@ class FetchFactory {
 
     this.defaultOptions = options;
 
+
+    this.defaultOptions.rejectOnBadResponse = get(
+      options,
+      'rejectOnBadResponse',
+      true
+    );
+
     const templateMethods = (options.methods || []).map((methodName) => {
       if (fetchFactoryTemplates[methodName]) {
         return { [methodName]: fetchFactoryTemplates[methodName] };
@@ -60,14 +67,20 @@ class FetchFactory {
     let responseInterceptors = get(
       this.defaultOptions,
       'interceptors.response',
-      [throwOnResponseError, (response) => response.json()]
+      [(response) => response.json()]
     );
 
     if (!Array.isArray(responseInterceptors)) {
       responseInterceptors = [responseInterceptors];
     }
 
-    return responseInterceptors;
+    var result = responseInterceptors;
+
+    if (this.defaultOptions.rejectOnBadResponse) {
+      result = [throwOnResponseError].concat(responseInterceptors);
+    }
+
+    return result;
   }
 
   getRequestInterceptors() {

@@ -25,8 +25,8 @@ test('the default response interceptor consumes the data as JSON', (t) => {
   });
 });
 
-test.skip('the default response interceptor throws on response error', (t) => {
-  t.plan(1);
+test('the default response interceptor throws on response error', (t) => {
+  t.plan(2);
   const UserFactory = fetchFactory.create({
     url: 'http://www.api.com/users',
     method: 'GET',
@@ -38,7 +38,10 @@ test.skip('the default response interceptor throws on response error', (t) => {
                  .get('/users')
                  .reply(404);
 
-  t.throws(UserFactory.findAll());
+  UserFactory.findAll().catch((error) => {
+    t.ok(stub.isDone(), 'the stub was called');
+    t.equal(error.response.status, 404);
+  });
 });
 
 test('you can pass in a custom interceptor', (t) => {
@@ -61,6 +64,64 @@ test('you can pass in a custom interceptor', (t) => {
   UserFactory.findAll().then((data) => {
     t.ok(stub.isDone(), 'the stub was called');
     t.deepEqual(data, { name: 'bob' });
+  });
+});
+
+test('the default error handler throws on respsonse error with a custom interceptor', (t) => {
+  t.plan(2);
+
+  const UserFactory = fetchFactory.create({
+    url: 'http://www.api.com/users',
+    method: 'GET',
+    interceptors: {
+      response: (data) => ({ name: 'bob' }),
+    },
+  }, {
+    findAll: {},
+  });
+
+  const stub = nock('http://www.api.com')
+    .get('/users')
+    .reply(404);
+
+  UserFactory.findAll().catch((error) => {
+    t.ok(stub.isDone(), 'the stub was called');
+    t.equal(error.response.status, 404);
+  });
+});
+
+test('the default error handler is not called if rejectOnBadResponse is set to false', (t) => {
+  t.plan(3);
+
+  const UserFactory = fetchFactory.create({
+    url: 'http://www.api.com/users',
+    method: 'GET',
+    rejectOnBadResponse: false,
+    interceptors: {
+      response: [
+        (response) => {
+          if (response.status < 200 || response.status >= 300) {
+            const error = new Error(response.statusText);
+            error.response = response;
+            error.customFlag = true;
+            throw error;
+          }
+        },
+        (data) => ({ name: 'bob' }),
+      ],
+    },
+  }, {
+    findAll: {},
+  });
+
+  const stub = nock('http://www.api.com')
+    .get('/users')
+    .reply(404);
+
+  UserFactory.findAll().catch((error) => {
+    t.ok(stub.isDone(), 'the stub was called');
+    t.equal(error.response.status, 404);
+    t.true(error.customFlag);
   });
 });
 
