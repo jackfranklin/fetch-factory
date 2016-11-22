@@ -1,5 +1,5 @@
 import assign from 'lodash.assign';
-import pick from 'lodash.pick';
+import pickBy from 'lodash.pickBy';
 import get from 'lodash.get';
 import isEmpty from 'lodash.isEmpty';
 
@@ -35,6 +35,13 @@ class FetchFactory {
 
     this.defaultOptions = options;
 
+
+    this.defaultOptions.rejectOnBadResponse = get(
+      options,
+      'rejectOnBadResponse',
+      true
+    );
+
     const templateMethods = (options.methods || []).map((methodName) => {
       if (fetchFactoryTemplates[methodName]) {
         return { [methodName]: fetchFactoryTemplates[methodName] };
@@ -53,21 +60,27 @@ class FetchFactory {
   }
 
   removeNullFetchOptions(options) {
-    return pick(options, (v, k) => v != null && !isEmpty(v));
+    return pickBy(options, (v, k) => v != null && !isEmpty(v));
   }
 
   getResponseInterceptors() {
     let responseInterceptors = get(
       this.defaultOptions,
       'interceptors.response',
-      [throwOnResponseError, (response) => response.json()]
+      [(response) => response.json()]
     );
 
     if (!Array.isArray(responseInterceptors)) {
       responseInterceptors = [responseInterceptors];
     }
 
-    return responseInterceptors;
+    var result = responseInterceptors;
+
+    if (this.defaultOptions.rejectOnBadResponse) {
+      result = [throwOnResponseError].concat(responseInterceptors);
+    }
+
+    return result;
   }
 
   getRequestInterceptors() {

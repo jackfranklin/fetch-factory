@@ -5,42 +5,48 @@
   "main": "lib/index.js",
   "scripts": {
     "example": "open http://localhost:8000/example && python -m SimpleHTTPServer",
-    "browserify": "mkdir -p dist && browserify lib/browserify-entry.js -o dist/fetch-factory.js -s fetchFactory",
+    "browserify": "npm run mkdir && browserify lib/browserify-entry.js -o dist/fetch-factory.js -s fetchFactory",
+    "mkdir": "fsys --task=mkdir --dir=dist",
     "minify": "uglifyjs dist/fetch-factory.js > dist/fetch-factory.min.js",
     "build": "npm run babel && npm run browserify && npm run minify",
     "babel": "babel -d lib src",
     "prepublish": "npm run build",
     "pretest": "eslint src spec",
-    "test": "babel-tape-runner spec/*.spec.js"
+    "test": "babel-tape-runner spec/*.spec.js | tap-summary"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/jackfranklin/fetch-factory.git"
   },
   "author": "",
+  "contributors": [
+    "Vincent Schlatter <binnah.development@gmail.com> (https://github.com/vischlatter)"
+  ],
   "license": "ISC",
   "dependencies": {
-    "es6-promise": "^3.0.2",
-    "isomorphic-fetch": "^2.1.1",
-    "lodash.assign": "^3.2.0",
-    "lodash.get": "^3.7.0",
-    "lodash.isempty": "^3.0.4",
-    "lodash.merge": "^3.3.2",
-    "lodash.pick": "^3.1.0",
-    "nock": "^2.18.0",
-    "query-string": "^2.4.1",
-    "url-pattern": "^0.10.0"
+    "es6-promise": "^4.0.5",
+    "isomorphic-fetch": "^2.2.1",
+    "lodash.assign": "^4.2.0",
+    "lodash.get": "^4.4.2",
+    "lodash.isempty": "^4.4.0",
+    "lodash.merge": "^4.6.0",
+    "lodash.pickby": "^4.6.0",
+    "query-string": "^4.2.3",
+    "url-pattern": "^1.0.2"
   },
   "devDependencies": {
-    "babel-cli": "^6.1.2",
-    "babel-core": "^6.1.2",
-    "babel-eslint": "^4.1.6",
+    "babel-cli": "^6.18.0",
+    "babel-core": "^6.18.2",
+    "babel-eslint": "^7.1.0",
     "babel-preset-es2015": "^6.18.0",
-    "babel-tape-runner": "^1.3.0",
-    "browserify": "^12.0.1",
-    "eslint": "^1.10.3",
-    "sinon": "^1.16.1",
-    "tape": "^4.2.0",
-    "uglify-js": "^2.5.0"
+    "babel-tape-runner": "^2.0.1",
+    "browserify": "^13.1.1",
+    "eslint": "^3.10.2",
+    "fs-extra-cli": "0.0.4",
+    "nock": "^9.0.2",
+    "sinon": "^1.17.6",
+    "tap-summary": "^3.0.1",
+    "tape": "^4.6.2",
+    "uglify-js": "^2.7.4"
   }
 }
